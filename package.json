@@ -1,0 +1,22 @@
+{
+  "name": "week-1-onboarding-project-playwright-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright UI and API automation for automationexercise.com",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:playwright-ui": "playwright test --ui",
+    "codegen": "playwright codegen https://automationexercise.com",
+    "install:browsers": "playwright install chromium firefox webkit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.14.0",
+    "typescript": "^5.8.3"
+  }
+}
