@@ -5,7 +5,7 @@ export class HomePage {
   constructor(private readonly page: Page) {}
 
   async goto(): Promise<void> {
-    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+    await this.page.goto('/', { waitUntil: 'domcontentloaded', timeout: 90_000 });
   }
 
   /** Main nav "Home" (not the logo); avoids matching other `href="/"` in the header. */
@@ -127,7 +127,11 @@ export class HomePage {
   }
 
   async scrollToRecommendedItems(): Promise<void> {
-    await this.recommendedSection().scrollIntoViewIfNeeded();
+    const section = this.recommendedSection();
+    await section.waitFor({ state: 'attached', timeout: 30_000 });
+    await section.evaluate((el) =>
+      (el as HTMLElement).scrollIntoView({ block: 'center', inline: 'nearest' }),
+    );
   }
 
   async expectRecommendedItemsVisible(): Promise<void> {
@@ -135,7 +139,47 @@ export class HomePage {
   }
 
   async addFirstRecommendedProductToCart(): Promise<void> {
-    await this.recommendedSection().locator('a.add-to-cart').first().click();
+    const section = this.recommendedSection();
+    await section.waitFor({ state: 'attached', timeout: 30_000 });
+    await section.evaluate((el) =>
+      (el as HTMLElement).scrollIntoView({ block: 'center', inline: 'nearest' }),
+    );
+    await dismissGoogleVignetteIfPresent(this.page);
+
+    const maxAttempts = 3;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await section.evaluate((el) =>
+        (el as HTMLElement).scrollIntoView({ block: 'center', inline: 'nearest' }),
+      );
+      const link = section.locator('a.add-to-cart').first();
+      await link.waitFor({ state: 'attached', timeout: 15_000 });
+      await link.evaluate((el) =>
+        (el as HTMLElement).scrollIntoView({ block: 'center', inline: 'nearest' }),
+      );
+      await link.evaluate((el) => (el as HTMLAnchorElement).click());
+      try {
+        await expect
+          .poll(
+            async () =>
+              this.page.evaluate(() => {
+                const el = document.querySelector('#cartModal') as HTMLElement | null;
+                if (!el) return false;
+                if (el.classList.contains('in') || el.classList.contains('show')) return true;
+                if (el.getAttribute('aria-hidden') === 'false') return true;
+                return document.body.classList.contains('modal-open');
+              }),
+            { timeout: 12_000 },
+          )
+          .toBeTruthy();
+        return;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    throw lastError instanceof Error
+      ? lastError
+      : new Error('Recommended add to cart did not open cart modal');
   }
 
   async clickScrollUpControl(): Promise<void> {
@@ -167,10 +211,11 @@ export class HomePage {
     await categoryLink.evaluate((el: HTMLAnchorElement) => {
       el.click();
     });
-    await dismissGoogleVignetteIfPresent(this.page);
     if (!new RegExp(`/category_products/${categoryId}`).test(this.page.url())) {
       await this.page.goto(path);
     }
     await expect(this.page).toHaveURL(new RegExp(`/category_products/${categoryId}`));
+    await this.page.waitForLoadState('domcontentloaded');
+    await dismissGoogleVignetteIfPresent(this.page);
   }
 }

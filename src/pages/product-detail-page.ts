@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class ProductDetailPage {
   constructor(private readonly page: Page) {}
@@ -29,7 +30,10 @@ export class ProductDetailPage {
   }
 
   async addToCart(): Promise<void> {
-    await this.page.locator('button.cart').click();
+    const btn = this.page.locator('button.cart').first();
+    await btn.scrollIntoViewIfNeeded();
+    await dismissGoogleVignetteIfPresent(this.page);
+    await btn.click({ force: true });
   }
 
   async expectWriteReviewVisible(): Promise<void> {

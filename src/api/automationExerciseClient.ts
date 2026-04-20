@@ -99,6 +99,18 @@ export class AutomationExerciseClient {
   ): Promise<{ response: APIResponse; body: MessageBody }> {
     const response = await this.request.post('/api/createAccount', {
       form: payloadToFormRecord(payload),
+      timeout: 60_000,
+    });
+    const body = await readJson<MessageBody>(response);
+    return { response, body };
+  }
+
+  async updateAccount(
+    payload: CreateUserPayload,
+  ): Promise<{ response: APIResponse; body: MessageBody }> {
+    const response = await this.request.put('/api/updateAccount', {
+      form: payloadToFormRecord(payload),
+      timeout: 60_000,
     });
     const body = await readJson<MessageBody>(response);
     return { response, body };
@@ -110,6 +122,7 @@ export class AutomationExerciseClient {
   }): Promise<{ response: APIResponse; body: MessageBody }> {
     const response = await this.request.delete('/api/deleteAccount', {
       form: { email: params.email, password: params.password },
+      timeout: 60_000,
     });
     const body = await readJson<MessageBody>(response);
     return { response, body };

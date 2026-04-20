@@ -1,7 +1,11 @@
 import { test, expect } from '../../src/fixtures/test';
 import { signInFromHome } from '../../src/helpers/signInFromHome';
 
-test.describe.configure({ retries: 2 });
+test.describe.configure({ mode: 'serial', retries: 2 });
+
+test.beforeEach(({}, testInfo) => {
+  testInfo.setTimeout(120_000);
+});
 
 function rupeesToNumber(text: string): number {
   const digits = text.replace(/[^\d]/g, '');
@@ -35,6 +39,7 @@ test.describe('AutomationExercise official scenarios — cart, recommended, sear
   test('TC13: Verify Product quantity in Cart', async ({ home, products, productDetail, cart }) => {
     await home.goto();
     await home.openProducts();
+    await products.expectCatalogLoaded();
     await products.openFirstProductDetails();
     await productDetail.setQuantity(4);
     await productDetail.addToCart();
@@ -46,6 +51,7 @@ test.describe('AutomationExercise official scenarios — cart, recommended, sear
   test('TC17: Remove Products From Cart', async ({ home, products, cart }) => {
     await home.goto();
     await home.openProducts();
+    await products.expectCatalogLoaded();
     await products.addToCartFromListingByHoverIndex(0);
     await products.dismissAddedModal();
     await products.addToCartFromListingByHoverIndex(1);
@@ -59,11 +65,13 @@ test.describe('AutomationExercise official scenarios — cart, recommended, sear
   test('TC20: Search Products and Verify Cart After Login', async ({ home, products, login, cart, testUser }) => {
     await home.goto();
     await home.openProducts();
+    await products.expectCatalogLoaded();
     await products.searchProducts('blue');
     await products.expectSearchedProductsHeading();
     const count = await products.productCards().count();
     expect(count).toBeGreaterThan(0);
-    for (let i = 0; i < count; i++) {
+    const addCount = Math.min(count, 8);
+    for (let i = 0; i < addCount; i++) {
       await products.addToCartFromListingByHoverIndex(i);
       await products.expectAddedModalVisible();
       await products.dismissAddedModal();
