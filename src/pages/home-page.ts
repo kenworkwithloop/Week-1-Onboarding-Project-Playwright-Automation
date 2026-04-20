@@ -1,11 +1,11 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class HomePage {
   constructor(private readonly page: Page) {}
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
   }
 
   /** Main nav "Home" (not the logo); avoids matching other `href="/"` in the header. */
@@ -96,6 +96,52 @@ export class HomePage {
       await this.page.goto('/signup');
     }
     await expect(this.page).toHaveURL(/\/signup/);
+  }
+
+  footerSubscriptionBlock(): Locator {
+    return this.page.locator('#footer').getByRole('heading', { name: /^Subscription$/i });
+  }
+
+  async scrollToFooterSubscription(): Promise<void> {
+    await this.footerSubscriptionBlock().scrollIntoViewIfNeeded();
+  }
+
+  async expectFooterSubscriptionVisible(): Promise<void> {
+    await expect(this.footerSubscriptionBlock()).toBeVisible();
+  }
+
+  async subscribeFromCurrentPageFooter(email: string): Promise<void> {
+    await this.page.locator('#footer #susbscribe_email').fill(email);
+    await this.page.locator('#footer #subscribe').click();
+  }
+
+  async expectSubscribeSuccessVisible(): Promise<void> {
+    await expect(this.page.locator('#success-subscribe')).toBeVisible();
+    await expect(
+      this.page.getByText('You have been successfully subscribed!', { exact: true }),
+    ).toBeVisible();
+  }
+
+  recommendedSection(): Locator {
+    return this.page.locator('.recommended_items');
+  }
+
+  async scrollToRecommendedItems(): Promise<void> {
+    await this.recommendedSection().scrollIntoViewIfNeeded();
+  }
+
+  async expectRecommendedItemsVisible(): Promise<void> {
+    await expect(this.recommendedSection().getByRole('heading', { name: /recommended items/i })).toBeVisible();
+  }
+
+  async addFirstRecommendedProductToCart(): Promise<void> {
+    await this.recommendedSection().locator('a.add-to-cart').first().click();
+  }
+
+  async clickScrollUpControl(): Promise<void> {
+    const up = this.page.locator('#scrollUp');
+    await up.waitFor({ state: 'visible', timeout: 15_000 });
+    await up.click();
   }
 
   async openCategoryProducts(categoryId: number): Promise<void> {

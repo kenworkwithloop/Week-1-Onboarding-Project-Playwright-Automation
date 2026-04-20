@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class ProductsPage {
@@ -6,6 +6,50 @@ export class ProductsPage {
 
   async goto(): Promise<void> {
     await this.page.goto('/products');
+  }
+
+  private searchInput(): Locator {
+    return this.page.locator('#search_product');
+  }
+
+  async searchProducts(term: string): Promise<void> {
+    await this.searchInput().fill(term);
+    await this.page.locator('#submit_search').click();
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
+  async expectSearchedProductsHeading(): Promise<void> {
+    await expect(this.page.getByRole('heading', { name: /Searched Products/i })).toBeVisible();
+  }
+
+  async expectSearchResultsRelatedToTerm(term: string): Promise<void> {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(escaped, 'i');
+    const cards = this.productCards();
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+    const related = cards.filter({ hasText: re });
+    await expect(related.first()).toBeVisible();
+  }
+
+  /** Hover tile `index` (0-based) and click the first overlay “Add to cart”. */
+  async addToCartFromListingByHoverIndex(index: number): Promise<void> {
+    const wrapper = this.productCardWrappers().nth(index);
+    await wrapper.hover();
+    const add = wrapper.locator('.product-overlay a.add-to-cart').first();
+    await add.scrollIntoViewIfNeeded();
+    await add.click();
+  }
+
+  async openBrandFromSidebar(brandLabel: string | RegExp): Promise<void> {
+    const brands = this.page.locator('.brands-name a');
+    await brands.filter({ hasText: brandLabel }).first().click();
+    await dismissGoogleVignetteIfPresent(this.page);
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
+  async expectBrandHeading(brand: RegExp): Promise<void> {
+    await expect(this.page.getByRole('heading', { name: brand })).toBeVisible();
   }
 
   async addToCartByProductId(productId: number): Promise<void> {
@@ -21,6 +65,12 @@ export class ProductsPage {
     await addLink.click();
   }
 
+  async viewCartFromAddedModal(): Promise<void> {
+    const modal = this.page.locator('#cartModal');
+    await modal.getByRole('link', { name: /View Cart/i }).click();
+    await expect(modal).toBeHidden();
+  }
+
   async dismissAddedModal(): Promise<void> {
     const modal = this.page.locator('#cartModal');
     await modal.getByRole('button', { name: /Continue Shopping/i }).click();
@@ -31,6 +81,38 @@ export class ProductsPage {
     const modal = this.page.locator('#cartModal');
     await expect(modal).toBeVisible();
     await expect(modal.getByText('Added!', { exact: true })).toBeVisible();
+  }
+
+  /** Product tiles inside `#features_items` / `.features_items` (shared by `/products` and category routes). */
+  productCards(): Locator {
+    return this.page.locator('.features_items .productinfo');
+  }
+
+  /** Outermost wrapper per grid tile (`.col-sm-4` > `.product-image-wrapper`). */
+  productCardWrappers(): Locator {
+    return this.page.locator('.features_items .product-image-wrapper');
+  }
+
+  async expectProductCardWrapperStructure(card: Locator): Promise<void> {
+    await expect(card.locator('.single-products')).toBeVisible();
+
+    const primary = card.locator('.productinfo').first();
+    await expect(primary.locator('img')).toBeVisible();
+    await expect(primary.locator('img')).toHaveAttribute('src', /\/get_product_picture\/\d+/);
+    await expect(primary.locator('h2')).toHaveText(/Rs\.\s*\d+/);
+    await expect(primary.locator('p').first()).toBeVisible();
+
+    await expect(card.locator('.product-overlay .overlay-content')).toBeVisible();
+    await expect(card.locator('a.add-to-cart')).toHaveCount(2);
+    await expect(card.locator('a.add-to-cart').first()).toHaveAttribute('data-product-id', /\d+/);
+
+    const viewProduct = card.getByRole('link', { name: /View Product/i });
+    await expect(viewProduct).toBeVisible();
+    await expect(viewProduct).toHaveAttribute('href', /\/product_details\/\d+/);
+  }
+
+  async expectListedProductCount(count: number): Promise<void> {
+    await expect(this.productCards()).toHaveCount(count);
   }
 
   async expectCatalogLoaded(): Promise<void> {

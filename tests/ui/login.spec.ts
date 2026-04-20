@@ -22,6 +22,7 @@ test.describe('Login UI', () => {
     await home.openLogin();
     await login.login('not_a_real_user@example.com', 'wrong-password');
     await expect(page).toHaveURL(/login/);
-    await expect(page.getByRole('heading', { name: /Login to your account/i })).toBeVisible();
+    await login.expectLoginFormVisible();
+    await login.expectIncorrectCredentialsMessage();
   });
 });

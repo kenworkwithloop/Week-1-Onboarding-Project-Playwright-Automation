@@ -33,7 +33,7 @@ test.describe('Header navigation smoke', () => {
     await expect(page.getByRole('heading', { name: /Get In Touch/i })).toBeVisible();
   });
 
-  test('loads Test Cases from the header', async ({ home, page }) => {
+  test('TC7: Verify Test Cases Page (loads Test Cases from the header)', async ({ home, page }) => {
     await home.openTestCases();
     await expect(page).toHaveURL(/\/test_cases/);
     await expect(
