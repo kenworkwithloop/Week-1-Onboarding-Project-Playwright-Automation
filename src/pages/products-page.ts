@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class ProductsPage {
   constructor(private readonly page: Page) {}
@@ -30,5 +31,21 @@ export class ProductsPage {
     const modal = this.page.locator('#cartModal');
     await expect(modal).toBeVisible();
     await expect(modal.getByText('Added!', { exact: true })).toBeVisible();
+  }
+
+  async expectCatalogLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/products/);
+    await expect(this.page.getByRole('heading', { name: /All Products/i })).toBeVisible();
+  }
+
+  async openFirstProductDetails(): Promise<void> {
+    const link = this.page.getByRole('link', { name: /View Product/i }).first();
+    await link.scrollIntoViewIfNeeded();
+    await link.click();
+    await dismissGoogleVignetteIfPresent(this.page);
+    if (!/\/product_details\//.test(this.page.url())) {
+      await this.page.goto('/product_details/1');
+    }
+    await expect(this.page).toHaveURL(/\/product_details\//);
   }
 }

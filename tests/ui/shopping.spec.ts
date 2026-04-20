@@ -1,5 +1,6 @@
 import { test } from '../../src/fixtures/test';
 import { expectCartContainsProduct } from '../../src/helpers/cartAssertions';
+import { signInFromHome } from '../../src/helpers/signInFromHome';
 
 test.describe.configure({ retries: 2 });
 
@@ -11,9 +12,7 @@ test.describe('Shopping cart UI', () => {
     products,
     testUser,
   }) => {
-    await home.goto();
-    await home.openLogin();
-    await login.login(testUser.email, testUser.password);
+    await signInFromHome(home, login, testUser.email, testUser.password);
     await home.openProducts();
     await products.addBlueTopToCart();
     await products.expectAddedModalVisible();

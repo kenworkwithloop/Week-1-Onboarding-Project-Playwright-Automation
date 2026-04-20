@@ -8,10 +8,9 @@ test.describe('Authenticated session', () => {
     await expect(page.getByText(/Logged in as/i)).toBeVisible();
   });
 
-  test('can open products while authenticated', async ({ home, page }) => {
+  test('can open products while authenticated', async ({ home, products }) => {
     await home.goto();
     await home.openProducts();
-    await expect(page).toHaveURL(/\/products/);
-    await expect(page.getByRole('heading', { name: /All Products/i })).toBeVisible();
+    await products.expectCatalogLoaded();
   });
 });

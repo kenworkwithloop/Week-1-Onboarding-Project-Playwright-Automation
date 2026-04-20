@@ -1,4 +1,5 @@
 import { test, expect } from '../../src/fixtures/test';
+import { signInFromHome } from '../../src/helpers/signInFromHome';
 
 test.describe.configure({ retries: 2 });
 
@@ -8,9 +9,7 @@ test.describe('Login UI', () => {
     login,
     testUser,
   }) => {
-    await home.goto();
-    await home.openLogin();
-    await login.login(testUser.email, testUser.password);
+    await signInFromHome(home, login, testUser.email, testUser.password);
     await login.expectLoggedIn(testUser.name);
   });
 
