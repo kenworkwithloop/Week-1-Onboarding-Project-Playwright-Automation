@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class ProductsPage {
@@ -31,6 +31,42 @@ export class ProductsPage {
     const modal = this.page.locator('#cartModal');
     await expect(modal).toBeVisible();
     await expect(modal.getByText('Added!', { exact: true })).toBeVisible();
+  }
+
+  /** Product tiles inside `#features_items` / `.features_items` (shared by `/products` and category routes). */
+  productCards(): Locator {
+    return this.page.locator('.features_items .productinfo');
+  }
+
+  /** Outermost wrapper per grid tile (`.col-sm-4` > `.product-image-wrapper`). */
+  productCardWrappers(): Locator {
+    return this.page.locator('.features_items .product-image-wrapper');
+  }
+
+  /**
+   * Asserts the DOM shell for one catalog tile: image, price line, title, paired add-to-cart controls, and details link.
+   * Avoids asserting a specific product name or numeric price.
+   */
+  async expectProductCardWrapperStructure(card: Locator): Promise<void> {
+    await expect(card.locator('.single-products')).toBeVisible();
+
+    const primary = card.locator('.productinfo').first();
+    await expect(primary.locator('img')).toBeVisible();
+    await expect(primary.locator('img')).toHaveAttribute('src', /\/get_product_picture\/\d+/);
+    await expect(primary.locator('h2')).toHaveText(/Rs\.\s*\d+/);
+    await expect(primary.locator('p').first()).toBeVisible();
+
+    await expect(card.locator('.product-overlay .overlay-content')).toBeVisible();
+    await expect(card.locator('a.add-to-cart')).toHaveCount(2);
+    await expect(card.locator('a.add-to-cart').first()).toHaveAttribute('data-product-id', /\d+/);
+
+    const viewProduct = card.getByRole('link', { name: /View Product/i });
+    await expect(viewProduct).toBeVisible();
+    await expect(viewProduct).toHaveAttribute('href', /\/product_details\/\d+/);
+  }
+
+  async expectListedProductCount(count: number): Promise<void> {
+    await expect(this.productCards()).toHaveCount(count);
   }
 
   async expectCatalogLoaded(): Promise<void> {
