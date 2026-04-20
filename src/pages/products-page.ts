@@ -1,8 +1,14 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import {
+  isBootstrapCartModalOpen,
+  waitForBootstrapCartModalClosed,
+  waitForBootstrapCartModalOpen,
+} from '../helpers/bootstrapCartModal';
+import {
   dismissGoogleAdOverlayAfterInteraction,
   dismissGoogleVignetteIfPresent,
 } from '../helpers/dismissGoogleVignette';
+import { recoverToApplicationPage } from '../helpers/recoverApplicationPage';
 
 export class ProductsPage {
   constructor(private readonly page: Page) {}
@@ -14,26 +20,10 @@ export class ProductsPage {
       (el as HTMLElement).scrollIntoView({ block: 'center', inline: 'nearest' }),
     );
     await dismissGoogleVignetteIfPresent(this.page);
+    const priorUrl = this.page.url();
     await add.click({ force: true });
+    await recoverToApplicationPage(this.page, priorUrl);
     await dismissGoogleAdOverlayAfterInteraction(this.page);
-  }
-
-  private async isBootstrapCartModalOpen(): Promise<boolean> {
-    return this.page.evaluate(() => {
-      const el = document.querySelector('#cartModal') as HTMLElement | null;
-      if (!el) return false;
-      if (el.classList.contains('in') || el.classList.contains('show')) return true;
-      if (el.getAttribute('aria-hidden') === 'false') return true;
-      return document.body.classList.contains('modal-open');
-    });
-  }
-
-  private async waitForBootstrapCartModalOpen(timeout = 20_000): Promise<void> {
-    await expect.poll(async () => this.isBootstrapCartModalOpen(), { timeout }).toBeTruthy();
-  }
-
-  private async waitForBootstrapCartModalClosed(timeout = 15_000): Promise<void> {
-    await expect.poll(async () => !(await this.isBootstrapCartModalOpen()), { timeout }).toBeTruthy();
   }
 
   async goto(): Promise<void> {
@@ -73,7 +63,7 @@ export class ProductsPage {
    */
   private async clickListingAddControl(index: number, options?: { skipOverlay?: boolean }): Promise<void> {
     await expect
-      .poll(async () => !(await this.isBootstrapCartModalOpen()), { timeout: 12_000 })
+      .poll(async () => !(await isBootstrapCartModalOpen(this.page)), { timeout: 12_000 })
       .toBeTruthy()
       .catch(() => {});
 
@@ -101,7 +91,9 @@ export class ProductsPage {
       return;
     }
 
+    const priorUrl = this.page.url();
     await card.getByText('Add to cart', { exact: true }).first().click({ force: true });
+    await recoverToApplicationPage(this.page, priorUrl);
     await dismissGoogleAdOverlayAfterInteraction(this.page);
   }
 
@@ -112,7 +104,7 @@ export class ProductsPage {
       const skipOverlay = attempt > 0 || index > 0;
       await this.clickListingAddControl(index, { skipOverlay });
       try {
-        await this.waitForBootstrapCartModalOpen(22_000);
+        await waitForBootstrapCartModalOpen(this.page, 22_000);
         return;
       } catch (e) {
         lastError = e;
@@ -146,7 +138,7 @@ export class ProductsPage {
   }
 
   async viewCartFromAddedModal(): Promise<void> {
-    await this.waitForBootstrapCartModalOpen();
+    await waitForBootstrapCartModalOpen(this.page);
     const modal = this.page.locator('#cartModal');
     await modal.locator('a[href="/view_cart"]').first().click({ force: true });
     if (!/\/view_cart/.test(this.page.url())) {
@@ -156,7 +148,7 @@ export class ProductsPage {
   }
 
   async dismissAddedModal(): Promise<void> {
-    await this.waitForBootstrapCartModalOpen();
+    await waitForBootstrapCartModalOpen(this.page);
     const modal = this.page.locator('#cartModal');
     const btn = modal.locator('button.close-modal');
     try {
@@ -165,10 +157,10 @@ export class ProductsPage {
       await this.page.keyboard.press('Escape');
     }
     try {
-      await this.waitForBootstrapCartModalClosed();
+      await waitForBootstrapCartModalClosed(this.page);
     } catch {
       await this.page.keyboard.press('Escape');
-      await this.waitForBootstrapCartModalClosed();
+      await waitForBootstrapCartModalClosed(this.page);
     }
     const backdrop = this.page.locator('.modal-backdrop');
     if ((await backdrop.count()) > 0) {
@@ -181,7 +173,7 @@ export class ProductsPage {
    * adds `.in` (BS3) or `.show` (BS4+) on `#cartModal` when the dialog is actually open.
    */
   async expectAddedModalVisible(): Promise<void> {
-    await this.waitForBootstrapCartModalOpen();
+    await waitForBootstrapCartModalOpen(this.page);
   }
 
   /** Product tiles inside `#features_items` / `.features_items` (shared by `/products` and category routes). */

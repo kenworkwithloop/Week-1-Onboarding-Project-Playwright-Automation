@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Download, type Page } from '@playwright/test';
 
 /** Test card values accepted by the demo payment form (no real charge). */
 export const DEMO_PAYMENT_CARD = {
@@ -38,7 +38,7 @@ export class PaymentPage {
     ).toBeVisible();
   }
 
-  downloadInvoice(): ReturnType<Page['waitForEvent']> {
+  downloadInvoice(): Promise<Download> {
     return this.page.waitForEvent('download');
   }
 

@@ -1,5 +1,8 @@
 import { expect, type Page } from '@playwright/test';
-import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
+import {
+  dismissGoogleAdOverlayAfterInteraction,
+  dismissGoogleVignetteIfPresent,
+} from '../helpers/dismissGoogleVignette';
 
 export class ProductDetailPage {
   constructor(private readonly page: Page) {}
@@ -34,6 +37,7 @@ export class ProductDetailPage {
     await btn.scrollIntoViewIfNeeded();
     await dismissGoogleVignetteIfPresent(this.page);
     await btn.click({ force: true });
+    await dismissGoogleAdOverlayAfterInteraction(this.page);
   }
 
   async expectWriteReviewVisible(): Promise<void> {

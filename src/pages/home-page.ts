@@ -1,8 +1,24 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { isBootstrapCartModalOpen } from '../helpers/bootstrapCartModal';
 import { dismissGoogleVignetteIfPresent } from '../helpers/dismissGoogleVignette';
 
 export class HomePage {
   constructor(private readonly page: Page) {}
+
+  private async clickHeaderLinkThenEnsureUrl(options: {
+    link: Locator;
+    needsGotoFallback: () => boolean;
+    gotoPath: string;
+    expectUrl: string | RegExp;
+  }): Promise<void> {
+    await options.link.scrollIntoViewIfNeeded();
+    await options.link.click();
+    await dismissGoogleVignetteIfPresent(this.page);
+    if (options.needsGotoFallback()) {
+      await this.page.goto(options.gotoPath);
+    }
+    await expect(this.page).toHaveURL(options.expectUrl);
+  }
 
   async goto(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'domcontentloaded', timeout: 90_000 });
@@ -10,82 +26,69 @@ export class HomePage {
 
   /** Main nav "Home" (not the logo); avoids matching other `href="/"` in the header. */
   async openHome(): Promise<void> {
-    const link = this.page.locator('#header .navbar-nav a[href="/"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    const url = new URL(this.page.url());
-    const atRoot = url.pathname === '/' || url.pathname === '';
-    if (!atRoot) {
-      await this.page.goto('/');
-    }
-    await expect(this.page).toHaveURL('/');
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header .navbar-nav a[href="/"]').first(),
+      needsGotoFallback: () => {
+        const url = new URL(this.page.url());
+        return !(url.pathname === '/' || url.pathname === '');
+      },
+      gotoPath: '/',
+      expectUrl: '/',
+    });
   }
 
   async openProducts(): Promise<void> {
-    const link = this.page.locator('#header a[href="/products"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/products/.test(this.page.url())) {
-      await this.page.goto('/products');
-    }
-    await expect(this.page).toHaveURL(/\/products/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/products"]').first(),
+      needsGotoFallback: () => !/\/products/.test(this.page.url()),
+      gotoPath: '/products',
+      expectUrl: /\/products/,
+    });
   }
 
   async openCart(): Promise<void> {
-    const link = this.page.locator('#header a[href="/view_cart"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/view_cart/.test(this.page.url())) {
-      await this.page.goto('/view_cart');
-    }
-    await expect(this.page).toHaveURL(/\/view_cart/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/view_cart"]').first(),
+      needsGotoFallback: () => !/\/view_cart/.test(this.page.url()),
+      gotoPath: '/view_cart',
+      expectUrl: /\/view_cart/,
+    });
   }
 
   async openLogin(): Promise<void> {
-    const link = this.page.locator('#header a[href="/login"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/login/.test(this.page.url())) {
-      await this.page.goto('/login');
-    }
-    await expect(this.page).toHaveURL(/\/login/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/login"]').first(),
+      needsGotoFallback: () => !/\/login/.test(this.page.url()),
+      gotoPath: '/login',
+      expectUrl: /\/login/,
+    });
   }
 
   async openContactUs(): Promise<void> {
-    const link = this.page.locator('#header a[href="/contact_us"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/contact_us/.test(this.page.url())) {
-      await this.page.goto('/contact_us');
-    }
-    await expect(this.page).toHaveURL(/\/contact_us/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/contact_us"]').first(),
+      needsGotoFallback: () => !/\/contact_us/.test(this.page.url()),
+      gotoPath: '/contact_us',
+      expectUrl: /\/contact_us/,
+    });
   }
 
   async openTestCases(): Promise<void> {
-    const link = this.page.locator('#header a[href="/test_cases"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/test_cases/.test(this.page.url())) {
-      await this.page.goto('/test_cases');
-    }
-    await expect(this.page).toHaveURL(/\/test_cases/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/test_cases"]').first(),
+      needsGotoFallback: () => !/\/test_cases/.test(this.page.url()),
+      gotoPath: '/test_cases',
+      expectUrl: /\/test_cases/,
+    });
   }
 
   async openApiList(): Promise<void> {
-    const link = this.page.locator('#header a[href="/api_list"]').first();
-    await link.scrollIntoViewIfNeeded();
-    await link.click();
-    await dismissGoogleVignetteIfPresent(this.page);
-    if (!/\/api_list/.test(this.page.url())) {
-      await this.page.goto('/api_list');
-    }
-    await expect(this.page).toHaveURL(/\/api_list/);
+    await this.clickHeaderLinkThenEnsureUrl({
+      link: this.page.locator('#header a[href="/api_list"]').first(),
+      needsGotoFallback: () => !/\/api_list/.test(this.page.url()),
+      gotoPath: '/api_list',
+      expectUrl: /\/api_list/,
+    });
   }
 
   /** Header links to `/login` only; `/signup` is a separate GET route with the same signup form. */
@@ -160,17 +163,7 @@ export class HomePage {
       await link.evaluate((el) => (el as HTMLAnchorElement).click());
       try {
         await expect
-          .poll(
-            async () =>
-              this.page.evaluate(() => {
-                const el = document.querySelector('#cartModal') as HTMLElement | null;
-                if (!el) return false;
-                if (el.classList.contains('in') || el.classList.contains('show')) return true;
-                if (el.getAttribute('aria-hidden') === 'false') return true;
-                return document.body.classList.contains('modal-open');
-              }),
-            { timeout: 12_000 },
-          )
+          .poll(async () => isBootstrapCartModalOpen(this.page), { timeout: 12_000 })
           .toBeTruthy();
         return;
       } catch (e) {

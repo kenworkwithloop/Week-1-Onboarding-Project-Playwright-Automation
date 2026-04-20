@@ -1,7 +1,6 @@
-import { test as base, expect } from '@playwright/test';
-import { AutomationExerciseClient } from '../api/automationExerciseClient';
-import type { CreateUserPayload } from '../helpers/userFactory';
-import { buildNewUserPayload } from '../helpers/userFactory';
+import { expect } from '@playwright/test';
+import { buildNewUserPayload, type CreateUserPayload } from '../helpers/userFactory';
+import { test as baseWithAeApi } from './aeApi.fixture';
 import { AccountCreationPage } from '../pages/account-creation-page';
 import { CartPage } from '../pages/cart-page';
 import { CheckoutPage } from '../pages/checkout-page';
@@ -14,7 +13,6 @@ import { ProductsPage } from '../pages/products-page';
 import { SignupPage } from '../pages/signup-page';
 
 type AppFixtures = {
-  aeApi: AutomationExerciseClient;
   testUser: CreateUserPayload;
   home: HomePage;
   login: LoginPage;
@@ -28,11 +26,7 @@ type AppFixtures = {
   productDetail: ProductDetailPage;
 };
 
-export const test = base.extend<AppFixtures>({
-  aeApi: async ({ request }, use) => {
-    await use(new AutomationExerciseClient(request));
-  },
-
+export const test = baseWithAeApi.extend<AppFixtures>({
   testUser: async ({ aeApi }, use, testInfo) => {
     const user = buildNewUserPayload(testInfo.workerIndex);
     const created = await aeApi.createAccount(user);
