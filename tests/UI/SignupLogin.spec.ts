@@ -1,4 +1,5 @@
 import { test } from '../../src/fixtures/ui.fixture';
+import { buildNewUserPayload } from '../../src/helpers/userFactory';
 import { SignupLoginPage } from '../../src/pages/SignupLoginPage';
 
 test.describe('Signup Login Page', () => {
@@ -47,5 +48,28 @@ test.describe('Signup Login Page', () => {
     await signupLogin.visit();
     await signupLogin.openFromHeader('viewCart');
     await signupLogin.expectAppPage('viewCart');
+  });
+
+  test('signs up a new account', async ({ page }, testInfo) => {
+    const signupLogin = new SignupLoginPage(page);
+    await signupLogin.visit();
+    const user = buildNewUserPayload(testInfo.parallelIndex);
+    await signupLogin.completeNewUserSignup(user);
+  });
+
+  test('logs out after signing up a new account', async ({ page }, testInfo) => {
+    const signupLogin = new SignupLoginPage(page);
+    await signupLogin.visit();
+    const user = buildNewUserPayload(testInfo.parallelIndex);
+    await signupLogin.completeNewUserSignup(user);
+    await signupLogin.logout();
+  });
+
+  test('deletes the account after signing up', async ({ page }, testInfo) => {
+    const signupLogin = new SignupLoginPage(page);
+    await signupLogin.visit();
+    const user = buildNewUserPayload(testInfo.parallelIndex);
+    await signupLogin.completeNewUserSignup(user);
+    await signupLogin.deleteLoggedInAccount();
   });
 });
