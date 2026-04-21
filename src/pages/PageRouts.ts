@@ -40,6 +40,21 @@ export type AppPageRoute = {
       title: 'Automation Practice for API Testing',
       link: 'API Testing'
     },
+    checkout: {
+      path: '/checkout',
+      title: 'Automation Exercise - Checkout',
+      link: 'Checkout'
+    },
+    payment: {
+      path: '/payment',
+      title: 'Automation Exercise - Payment',
+      link: 'Payment'
+    },
+    orderPlaced: {
+      path: '/order_placed',
+      title: 'Automation Exercise - Order Placed',
+      link: 'Order Placed'
+    }
   } as const satisfies Record<string, AppPageRoute>;
   
   export type AppPageKey = keyof typeof APP_PAGES;
