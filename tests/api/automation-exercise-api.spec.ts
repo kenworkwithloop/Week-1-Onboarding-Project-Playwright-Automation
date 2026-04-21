@@ -7,7 +7,7 @@
 import { expectAeResponse } from '../../src/helpers/automationExerciseAssertions';
 import { withDisposableUser } from '../../src/helpers/apiTestUsers';
 import { buildNewUserPayload } from '../../src/helpers/userFactory';
-import { test, expect } from './api.fixture';
+import { test, expect } from '../../src/fixtures/api.fixture';
 
 test.describe('AutomationExercise API', () => {
   test('returns products with success responseCode and non-empty list', async ({ aeApi }) => {

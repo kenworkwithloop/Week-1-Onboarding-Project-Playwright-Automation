@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { UI_BASE_URL } from './src/constants';
 import { AutomationExerciseClient } from './src/api/automationExerciseClient';
 import { buildNewUserPayload } from './src/helpers/userFactory';
+import { installGoogleAdMitigation } from './src/helpers/installGoogleAdMitigation';
 
 async function globalSetup(): Promise<void> {
   selectors.setTestIdAttribute('data-qa');
@@ -31,6 +32,7 @@ async function globalSetup(): Promise<void> {
 
       const context = await browser.newContext({ baseURL: UI_BASE_URL });
       const page = await context.newPage();
+      await installGoogleAdMitigation(page);
 
       await page.goto('/login', { waitUntil: 'domcontentloaded' });
       await page.getByTestId('login-email').fill(user.email);

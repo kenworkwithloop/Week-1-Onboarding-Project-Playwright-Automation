@@ -1,11 +1,11 @@
 import { test as base } from '@playwright/test';
 import { AutomationExerciseClient } from '../api/automationExerciseClient';
 
-export type AeApiFixtures = {
+export type AutomationExerciseApiFixtures = {
   aeApi: AutomationExerciseClient;
 };
 
-export const test = base.extend<AeApiFixtures>({
+export const test = base.extend<AutomationExerciseApiFixtures>({
   aeApi: async ({ request }, use) => {
     await use(new AutomationExerciseClient(request));
   },
