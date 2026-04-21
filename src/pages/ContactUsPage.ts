@@ -8,7 +8,6 @@ export type ContactFormPayload = {
   email: string;
   subject: string;
   message: string;
-  /** Optional file path for the attachment field */
   attachmentPath?: string;
 };
 
@@ -57,9 +56,6 @@ export class ContactUsPage extends PageBase {
     }
   }
 
-  /**
-   * Submits the contact form. The live site shows a native confirm dialog before updating the UI.
-   */
   async submitContactForm(payload: ContactFormPayload): Promise<void> {
     await this.fillContactForm(payload);
     this.page.once('dialog', async (dialog) => {
