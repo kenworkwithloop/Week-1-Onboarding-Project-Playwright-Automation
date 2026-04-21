@@ -1,3 +1,4 @@
+import path from 'path';
 import { test } from '../../src/fixtures/ui.fixture';
 import { ContactUsPage } from '../../src/pages/ContactUsPage';
 
@@ -5,6 +6,23 @@ test.describe('Contact Us Page', () => {
   test('loads successfully', async ({ page }) => {
     const contactUs = new ContactUsPage(page);
     await contactUs.visit();
+  });
+
+  test('submits contact form after confirming the dialog', async ({ page }) => {
+    const contactUs = new ContactUsPage(page);
+    await contactUs.visit();
+    await contactUs.expectContactFormVisible();
+
+    const attachmentPath = path.join(__dirname, '../../test-data/contact.txt');
+    await contactUs.submitContactForm({
+      name: 'Playwright User',
+      email: 'playwright.user@example.com',
+      subject: 'UI automation test',
+      message: 'This submission was created by an automated Playwright test.',
+      attachmentPath,
+    });
+
+    await contactUs.expectContactSubmissionSucceeded();
   });
 
   test('navigates to home page', async ({ page }) => {

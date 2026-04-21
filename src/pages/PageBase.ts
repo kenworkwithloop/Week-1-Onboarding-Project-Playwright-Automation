@@ -20,8 +20,6 @@ export class PageBase {
   }
 
   async expectPageTitle(title: string): Promise<void> {
-    console.log('expecting page title: ', title);
-    console.log('page title: ', await this.page.title());
     await expect(this.page).toHaveTitle(title);
   }
 
