@@ -1,79 +1,51 @@
 import { test } from '../../src/fixtures/ui.fixture';
-import { PageBase } from '../../src/pages/PageBase';
-import { APP_PAGES } from '../../src/pages/PageRouts';
+import { HomePage } from '../../src/pages/HomePage';
 
 test.describe('Home Page', () => {
   test('loads successfully', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
+    const home = new HomePage(page);
+    await home.visit();
   });
 
   test('navigates to products page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.products.link }).click();    
-    await pageBase.expectPageLoaded(APP_PAGES.products.path);
-    await pageBase.expectPageTitle(APP_PAGES.products.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('products');
+    await home.expectAppPage('products');
   });
 
   test('navigates to cart page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.viewCart.link }).click();
-    await pageBase.expectPageLoaded(APP_PAGES.viewCart.path);
-    await pageBase.expectPageTitle(APP_PAGES.viewCart.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('viewCart');
+    await home.expectAppPage('viewCart');
   });
 
   test('navigates to signup login page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.signupLogin.link }).click();
-    await pageBase.expectPageLoaded(APP_PAGES.signupLogin.path);
-    await pageBase.expectPageTitle(APP_PAGES.signupLogin.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('signupLogin');
+    await home.expectAppPage('signupLogin');
   });
 
   test('navigates to test cases page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.testCases.link }).click();
-    await pageBase.expectPageLoaded(APP_PAGES.testCases.path);
-    await pageBase.expectPageTitle(APP_PAGES.testCases.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('testCases');
+    await home.expectAppPage('testCases');
   });
 
   test('navigates to api list page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.apiList.link }).click();
-    await pageBase.expectPageLoaded(APP_PAGES.apiList.path);
-    await pageBase.expectPageTitle(APP_PAGES.apiList.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('apiList');
+    await home.expectAppPage('apiList');
   });
 
   test('navigates to contact us page', async ({ page }) => {
-    const pageBase = new PageBase(page);
-    await pageBase.goto(APP_PAGES.home.path);
-    await pageBase.expectPageLoaded(APP_PAGES.home.path);
-    await pageBase.expectPageTitle(APP_PAGES.home.title);
-    
-    await pageBase.headerNav().getByRole('link', { name: APP_PAGES.contactUs.link }).click();
-    await pageBase.expectPageLoaded(APP_PAGES.contactUs.path);
-    await pageBase.expectPageTitle(APP_PAGES.contactUs.title);
+    const home = new HomePage(page);
+    await home.visit();
+    await home.openFromHeader('contactUs');
+    await home.expectAppPage('contactUs');
   });
-
 });

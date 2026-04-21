@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { APP_PAGES } from './PageRouts';
+import { APP_PAGES, type AppPageKey } from './PageRouts';
 
 type PageGetByRole = Page['getByRole'];
 type AriaRole = Parameters<PageGetByRole>[0];
@@ -24,13 +24,15 @@ export class PageBase {
     console.log('page title: ', await this.page.title());
     await expect(this.page).toHaveTitle(title);
   }
-  
-  getByTestId(testId: string): Locator {
-    return this.page.getByTestId(testId);
+
+  async expectAppPage(key: AppPageKey): Promise<void> {
+    const route = APP_PAGES[key];
+    await this.expectPageLoaded(route.path);
+    await this.expectPageTitle(route.title);
   }
 
-  headerNav(): Locator {
-    return this.page.locator('#header ul.nav.navbar-nav');
+  getByTestId(testId: string): Locator {
+    return this.page.getByTestId(testId);
   }
 
   getByRole(role: AriaRole, name: string, options?: { exact?: boolean }): Locator {
