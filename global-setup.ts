@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { UI_BASE_URL } from './src/constants';
-import { AutomationExerciseClient } from './src/api/automationExerciseClient';
+import { AutomationExerciseClient } from './src/api/API';
 import { buildNewUserPayload } from './src/helpers/userFactory';
 import { installGoogleAdMitigation } from './src/helpers/installGoogleAdMitigation';
 

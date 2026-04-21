@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import type { AutomationExerciseClient } from '../api/automationExerciseClient';
+import type { AutomationExerciseClient } from '../api/API';
 import type { CreateUserPayload } from './userFactory';
 import { buildNewUserPayload } from './userFactory';
 

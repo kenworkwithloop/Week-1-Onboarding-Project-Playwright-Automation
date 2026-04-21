@@ -1,15 +1,9 @@
-/**
- * Read-only API checks run without extra describe-level retries so failures surface quickly.
- * Account-creation flows are grouped in a nested describe with retries=3 for transient HTML overload
- * responses instead of JSON. For local runs against a flaky site, use
- * `npx playwright test --project=api --retries=3`.
- */
 import { expectAeResponse } from '../../src/helpers/automationExerciseAssertions';
 import { withDisposableUser } from '../../src/helpers/apiTestUsers';
 import { buildNewUserPayload } from '../../src/helpers/userFactory';
 import { test, expect } from '../../src/fixtures/api.fixture';
 
-test.describe('AutomationExercise API', () => {
+test.describe('API Endpoints', () => {
   test('returns products with success responseCode and non-empty list', async ({ aeApi }) => {
     const { response, body } = await aeApi.getProductsList();
     expect(response.status()).toBe(200);

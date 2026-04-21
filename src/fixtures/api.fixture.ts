@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { AutomationExerciseClient } from '../api/automationExerciseClient';
+import { AutomationExerciseClient } from '../api/API';
 
 export type AutomationExerciseApiFixtures = {
   aeApi: AutomationExerciseClient;
