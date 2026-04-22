@@ -25,7 +25,7 @@ export BASE_URL=https://automationexercise.com
 ## Run tests
 
 ```bash
-npm test                    # API + UI (Chromium, Firefox, WebKit, plus chromium-authenticated if specs exist)
+npm test                    # API + UI (Chromium, Firefox, WebKit; authenticated specs run under Chromium)
 npm run test:api            # API only (still runs global setup that prepares auth storage)
 npm run test:ui             # All UI projects
 npm run test:headed         # All tests headed
@@ -54,11 +54,11 @@ npx playwright test --project=api
 | [src/helpers/](src/helpers/) | `userFactory`, API assertion helpers, ad overlay handling (`dismissGoogleVignette`, route blocking), navigation recovery |
 | [tests/ui/](tests/ui/) | Browser workflows (POM in specs) |
 | [tests/api/](tests/api/) | API-only specs, asserting JSON `responseCode` and payloads |
-| [global-setup.ts](global-setup.ts) | Creates a user via API, logs in once in the browser, writes `.auth/user.json` for the `chromium-authenticated` project |
+| [global-setup.ts](global-setup.ts) | Creates a user via API, logs in once in the browser, writes `.auth/user.json` consumed by authenticated UI specs |
 
 The UI uses `data-qa` attributes for stable hooks; Playwright is configured with `testIdAttribute: 'data-qa'` so `getByTestId('login-email')` maps to `data-qa="login-email"`.
 
-Authenticated UI specs live under `tests/ui/authenticated/` (see `chromium-authenticated` in [playwright.config.ts](playwright.config.ts)). Until specs exist there, that project simply matches nothing; global setup still produces `.auth/user.json` for future use.
+Authenticated UI specs live under `tests/ui/authenticated/` and load `.auth/user.json` via file-level `test.use({ storageState })`. They run as part of the **chromium** project; the `firefox` and `webkit` projects ignore that folder via [playwright.config.ts](playwright.config.ts) since the stored state is produced with Chromium.
 
 ## Extending the suite
 

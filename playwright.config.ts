@@ -1,8 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'path';
 import { UI_BASE_URL } from './src/constants';
-
-const authStatePath = path.join(__dirname, '.auth', 'user.json');
 
 export default defineConfig({
   testDir: '.',
@@ -31,7 +28,6 @@ export default defineConfig({
     {
       name: 'chromium',
       testMatch: 'tests/ui/**/*.spec.ts',
-      testIgnore: 'tests/ui/authenticated/**',
       use: { ...devices['Desktop Chrome'] },
     },
     {
@@ -45,14 +41,6 @@ export default defineConfig({
       testMatch: 'tests/ui/**/*.spec.ts',
       testIgnore: 'tests/ui/authenticated/**',
       use: { ...devices['Desktop Safari'] },
-    },
-    {
-      name: 'chromium-authenticated',
-      testMatch: 'tests/ui/authenticated/**/*.spec.ts',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: authStatePath,
-      },
     },
   ],
 });
