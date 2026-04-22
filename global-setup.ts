@@ -6,6 +6,7 @@ import { UI_BASE_URL } from './src/constants';
 import { AutomationExerciseClient } from './src/api/API';
 import { buildNewUserPayload } from './src/helpers/userFactory';
 import { installGoogleAdMitigation } from './src/helpers/installGoogleAdMitigation';
+import { SignupLoginPage } from './src/pages/SignupLoginPage';
 
 async function globalSetup(): Promise<void> {
   selectors.setTestIdAttribute('data-qa');
@@ -34,11 +35,10 @@ async function globalSetup(): Promise<void> {
       const page = await context.newPage();
       await installGoogleAdMitigation(page);
 
-      await page.goto('/login', { waitUntil: 'domcontentloaded' });
-      await page.getByTestId('login-email').fill(user.email);
-      await page.getByTestId('login-password').fill(user.password);
-      await page.getByTestId('login-button').click();
-      await page.getByText(/Logged in as/i).waitFor({ state: 'visible', timeout: 60_000 });
+      const signupLogin = new SignupLoginPage(page);
+      await signupLogin.visit();
+      await signupLogin.submitLogin(user.email, user.password);
+      await signupLogin.expectLoggedInAs(user.name);
 
       await context.storageState({ path: storagePath });
       await context.close();
