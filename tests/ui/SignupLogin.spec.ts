@@ -1,4 +1,4 @@
-import { test } from '../../src/fixtures/ui.fixture';
+import { expect, test } from '../../src/fixtures/ui.fixture';
 import { buildNewUserPayload } from '../../src/helpers/userFactory';
 import { SignupLoginPage } from '../../src/pages/SignupLoginPage';
 
@@ -63,6 +63,15 @@ test.describe('Signup Login Page', () => {
     const user = buildNewUserPayload(testInfo.parallelIndex);
     await signupLogin.completeNewUserSignup(user);
     await signupLogin.logout();
+  });
+
+  test('rejects login with incorrect credentials', async ({ page }) => {
+    const signupLogin = new SignupLoginPage(page);
+    await signupLogin.visit();
+    await signupLogin.submitLogin('invalid-user@example.com', 'WrongPassword123!');
+    await signupLogin.expectInvalidCredentialsError();
+    await signupLogin.expectNotLoggedIn();
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('deletes the account after signing up', async ({ page }, testInfo) => {

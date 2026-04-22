@@ -31,6 +31,26 @@ export class ViewCartPage extends PageBase {
     await expect(table.getByText(description, { exact: true })).toBeVisible();
   }
 
+  async expectCartDoesNotContainProduct(description: string): Promise<void> {
+    await expect(
+      this.page.locator('#cart_info_table').getByText(description, { exact: true }),
+    ).toHaveCount(0);
+  }
+
+  /** Clicks the trash control on the cart row whose description matches exactly. */
+  async removeLineItemWithDescription(description: string): Promise<void> {
+    const row = this.page
+      .locator('#cart_info_table tbody tr')
+      .filter({ has: this.page.getByText(description, { exact: true }) });
+    await expect(row).toHaveCount(1);
+    await row.locator('a.cart_quantity_delete').click();
+    await this.expectCartDoesNotContainProduct(description);
+  }
+
+  async expectCartEmptyState(): Promise<void> {
+    await expect(this.page.getByText(/Cart is empty!/i)).toBeVisible();
+  }
+
   /** Clicks the primary checkout CTA from the cart (guest or returning flow). */
   async proceedToCheckout(): Promise<void> {
     await this.page.locator('a.check_out').first().click();

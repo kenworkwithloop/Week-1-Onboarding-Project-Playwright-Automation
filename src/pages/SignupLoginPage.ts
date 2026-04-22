@@ -28,6 +28,22 @@ export class SignupLoginPage extends PageBase {
     await this.header.navigateTo(pageKey);
   }
 
+  async submitLogin(email: string, password: string): Promise<void> {
+    await this.page.getByTestId('login-email').fill(email);
+    await this.page.getByTestId('login-password').fill(password);
+    await this.page.getByTestId('login-button').click();
+  }
+
+  async expectInvalidCredentialsError(): Promise<void> {
+    await expect(
+      this.page.getByText(/Your email or password is incorrect!?/i),
+    ).toBeVisible();
+  }
+
+  async expectNotLoggedIn(): Promise<void> {
+    await expect(this.page.getByText(/Logged in as/i)).not.toBeVisible();
+  }
+
   async expectNewUserSignupFormVisible(): Promise<void> {
     await expect(this.signupForm).toContainText('New User Signup!');
     await expect(this.signupForm.getByTestId('signup-name')).toBeVisible();

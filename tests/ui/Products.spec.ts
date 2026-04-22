@@ -64,6 +64,34 @@ test.describe('Products Page', () => {
     await cart.expectCartContainsProduct(productName);
   });
 
+  test('adds multiple products then removes them from the cart', async ({ page }) => {
+    const products = new ProductsPage(page);
+    await products.visit();
+
+    const firstProduct = await products.addProductToCartAtIndex(0);
+    await products.openViewCartFromAddedModal();
+
+    const cart = new ViewCartPage(page);
+    await cart.expectViewCartLoaded();
+    await cart.expectCartContainsProduct(firstProduct);
+
+    await cart.openFromHeader('products');
+    await products.expectProductsLoaded();
+
+    const secondProduct = await products.addProductToCartAtIndex(1);
+    await products.openViewCartFromAddedModal();
+
+    await cart.expectViewCartLoaded();
+    await cart.expectCartContainsProduct(firstProduct);
+    await cart.expectCartContainsProduct(secondProduct);
+
+    await cart.removeLineItemWithDescription(firstProduct);
+    await cart.expectCartContainsProduct(secondProduct);
+
+    await cart.removeLineItemWithDescription(secondProduct);
+    await cart.expectCartEmptyState();
+  });
+
   test('adds a product and completes checkout as a new customer', async ({ page }, testInfo) => {
     const products = new ProductsPage(page);
     await products.visit();
