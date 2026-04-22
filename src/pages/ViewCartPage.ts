@@ -51,23 +51,23 @@ export class ViewCartPage extends PageBase {
     await expect(this.page.getByText(/Cart is empty!/i)).toBeVisible();
   }
 
-  /** Clicks the primary checkout CTA from the cart (guest or returning flow). */
+  async expectCheckoutUnavailable(): Promise<void> {
+    await expect(this.page.locator('a.check_out')).toHaveCount(0);
+  }
+
   async proceedToCheckout(): Promise<void> {
     await this.page.locator('a.check_out').first().click();
   }
 
-  /** True when checkout is blocked until the user registers or logs in (guest cart). */
   async requiresSignInForCheckout(): Promise<boolean> {
     return this.page.getByText(/Register.*Login account to proceed/i).isVisible();
   }
 
-  /** From the cart checkout panel, opens `/login` to register or sign in. */
   async openRegisterOrLoginFromCheckoutGate(): Promise<void> {
     await this.page.getByRole('link', { name: /Register.*Login/i }).click();
     await this.page.waitForURL('**/login**', { timeout: 60_000 });
   }
 
-  /** When already authenticated, proceeds from cart straight to `/checkout`. */
   async proceedToCheckoutWhenAuthenticated(): Promise<void> {
     await this.proceedToCheckout();
     await this.page.waitForURL('**/checkout**', { timeout: 60_000 });

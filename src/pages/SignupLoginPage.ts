@@ -52,10 +52,32 @@ export class SignupLoginPage extends PageBase {
   }
 
   async submitSignupStepOne(name: string, email: string): Promise<void> {
-    await this.signupForm.getByTestId('signup-name').fill(name);
-    await this.signupForm.getByTestId('signup-email').fill(email);
+    await this.fillSignupStepOne(name, email);
     await this.signupForm.getByTestId('signup-button').click();
     await this.page.waitForURL('**/signup', { timeout: 60_000 });
+  }
+
+  async fillSignupStepOne(name: string, email: string): Promise<void> {
+    await this.signupForm.getByTestId('signup-name').fill(name);
+    await this.signupForm.getByTestId('signup-email').fill(email);
+  }
+
+  async submitSignupStepOneExpectingRejection(name: string, email: string): Promise<void> {
+    await this.fillSignupStepOne(name, email);
+    await this.signupForm.getByTestId('signup-button').click();
+  }
+
+  async expectEmailAlreadyExistsError(): Promise<void> {
+    await expect(this.page.getByText(/Email Address already exist!?/i)).toBeVisible();
+    await expect(this.page.getByText(/Logged in as/i)).not.toBeVisible();
+  }
+
+  async expectLoginFieldRequired(field: 'email' | 'password'): Promise<void> {
+    const testId = field === 'email' ? 'login-email' : 'login-password';
+    const valueMissing = await this.page
+      .getByTestId(testId)
+      .evaluate((el) => (el as HTMLInputElement).validity.valueMissing);
+    expect(valueMissing).toBe(true);
   }
 
   async expectEnterAccountInformationVisible(): Promise<void> {
@@ -140,9 +162,6 @@ export class SignupLoginPage extends PageBase {
     await expect(this.page.getByText(/Logged in as/i)).not.toBeVisible();
   }
 
-  /**
-   * Deletes the current session's account (header link + confirm dialog) and lands on the deleted confirmation view.
-   */
   async deleteLoggedInAccount(): Promise<void> {
     await this.header.deleteAccount();
     await this.page.waitForURL('**/delete_account**', { timeout: 60_000 });

@@ -1,5 +1,7 @@
 import { expect, test } from '../../src/fixtures/ui.fixture';
+import { AutomationExerciseClient } from '../../src/api/API';
 import { buildNewUserPayload } from '../../src/helpers/userFactory';
+import { withDisposableUser } from '../../src/helpers/apiTestUsers';
 import { SignupLoginPage } from '../../src/pages/SignupLoginPage';
 
 test.describe('Signup Login Page', () => {
@@ -72,6 +74,46 @@ test.describe('Signup Login Page', () => {
     await signupLogin.expectInvalidCredentialsError();
     await signupLogin.expectNotLoggedIn();
     await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('rejects login when email and password are empty', async ({ page }) => {
+    const signupLogin = new SignupLoginPage(page);
+    await signupLogin.visit();
+    await signupLogin.submitLogin('', '');
+    await signupLogin.expectLoginFieldRequired('email');
+    await signupLogin.expectLoginFieldRequired('password');
+    await signupLogin.expectNotLoggedIn();
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('rejects login with wrong password for a registered user', async ({ page, request }, testInfo) => {
+    const signupLogin = new SignupLoginPage(page);
+    const client = new AutomationExerciseClient(request);
+    await withDisposableUser(
+      client,
+      async (user) => {
+        await signupLogin.visit();
+        await signupLogin.submitLogin(user.email, 'ThisIsNotTheirPassword!');
+        await signupLogin.expectInvalidCredentialsError();
+        await signupLogin.expectNotLoggedIn();
+      },
+      testInfo.parallelIndex,
+    );
+  });
+
+  test('rejects signup step one when the email is already registered', async ({ page, request }, testInfo) => {
+    const signupLogin = new SignupLoginPage(page);
+    const client = new AutomationExerciseClient(request);
+    await withDisposableUser(
+      client,
+      async (user) => {
+        await signupLogin.visit();
+        await signupLogin.expectNewUserSignupFormVisible();
+        await signupLogin.submitSignupStepOneExpectingRejection('Another Name', user.email);
+        await signupLogin.expectEmailAlreadyExistsError();
+      },
+      testInfo.parallelIndex,
+    );
   });
 
   test('deletes the account after signing up', async ({ page }, testInfo) => {

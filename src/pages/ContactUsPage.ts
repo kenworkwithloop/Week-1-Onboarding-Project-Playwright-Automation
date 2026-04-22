@@ -66,6 +66,28 @@ export class ContactUsPage extends PageBase {
     await this.contactForm.getByTestId('submit-button').click();
   }
 
+  async submitContactFormAndCancelDialog(payload: ContactFormPayload): Promise<void> {
+    await this.fillContactForm(payload);
+    const dialogHandled = this.page.waitForEvent('dialog').then(async (dialog) => {
+      expect(dialog.type()).toBe('confirm');
+      await dialog.dismiss();
+    });
+    await this.contactForm.getByTestId('submit-button').click();
+    await dialogHandled;
+  }
+
+  async clickSubmitWithoutFilling(): Promise<void> {
+    this.page.on('dialog', async (dialog) => {
+      await dialog.dismiss();
+    });
+    await this.contactForm.getByTestId('submit-button').click();
+  }
+
+  async expectSubmissionNotShown(): Promise<void> {
+    await expect(this.submissionSuccessBanner).toBeHidden();
+    await expect(this.contactForm).toBeVisible();
+  }
+
   async expectContactSubmissionSucceeded(): Promise<void> {
     await expect(this.submissionSuccessBanner).toBeVisible();
     await expect(this.submissionSuccessBanner).toContainText(

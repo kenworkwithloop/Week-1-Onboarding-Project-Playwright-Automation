@@ -7,6 +7,13 @@ test.describe('View Cart Page', () => {
     await viewCart.visit();
   });
 
+  test('shows empty state and hides checkout when cart has no items', async ({ page }) => {
+    const viewCart = new ViewCartPage(page);
+    await viewCart.visit();
+    await viewCart.expectCartEmptyState();
+    await viewCart.expectCheckoutUnavailable();
+  });
+
   test('navigates to signup login page', async ({ page }) => {
     const viewCart = new ViewCartPage(page);
     await viewCart.visit();

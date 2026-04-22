@@ -25,6 +25,27 @@ test.describe('Contact Us Page', () => {
     await contactUs.expectContactSubmissionSucceeded();
   });
 
+  test('does not submit when required fields are empty', async ({ page }) => {
+    const contactUs = new ContactUsPage(page);
+    await contactUs.visit();
+    await contactUs.expectContactFormVisible();
+    await contactUs.clickSubmitWithoutFilling();
+    await contactUs.expectSubmissionNotShown();
+  });
+
+  test('does not submit when the confirm dialog is dismissed', async ({ page }) => {
+    const contactUs = new ContactUsPage(page);
+    await contactUs.visit();
+    await contactUs.expectContactFormVisible();
+    await contactUs.submitContactFormAndCancelDialog({
+      name: 'Playwright User',
+      email: 'playwright.user@example.com',
+      subject: 'UI automation cancel test',
+      message: 'This submission should be cancelled at the confirm dialog.',
+    });
+    await contactUs.expectSubmissionNotShown();
+  });
+
   test('navigates to home page', async ({ page }) => {
     const contactUs = new ContactUsPage(page);
     await contactUs.visit();
